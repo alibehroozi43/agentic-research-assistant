@@ -40,13 +40,14 @@ HTML report generator
 
 ```text
 .
-├── main.py              # Agent loop, reflection, and report-generation workflow
-├── research_tools.py    # External research/retrieval tools
-├── .env.example         # Environment-variable template
-├── requirements.txt     # Python dependencies
+├── main.py                # Agent loop, reflection, and report-generation workflow
+├── research_tools.py      # External research/retrieval tools
+├── .env.example           # Environment-variable template
+├── requirements.txt       # Python dependencies
 ├── .gitignore
 ├── LICENSE
-└── outputs/             # Generated reports (ignored by Git)
+└── outputs/
+    └── sample_report.html # Committed portfolio example
 ```
 
 ## Setup
@@ -75,11 +76,21 @@ Then run:
 python main.py
 ```
 
-The example workflow researches recent developments in Agentic AI, performs a reflection/revision pass, and writes the final HTML report to `outputs/research_report.html`.
+The demo researches recent developments in Agentic AI, performs a reflection/revision pass, and writes a new runtime report to `outputs/research_report.html`.
+
+## Sample output
+
+A committed representative output from the workflow is available at [`outputs/sample_report.html`](outputs/sample_report.html). Runtime-generated HTML files remain ignored by Git so local runs do not clutter the repository.
 
 ## Implementation notes
 
-The main agent does not hard-code OpenAI tool schemas. Instead, it inspects the Python signatures of enabled research functions and converts them into function-calling schemas at runtime. The LLM can then choose a tool, provide arguments, receive the tool output, and continue the research loop until it produces a final response.
+The main agent does not hard-code OpenAI tool schemas. Instead, it inspects the Python signatures of enabled research functions and converts them into function-calling schemas at runtime.
+
+Because postponed annotations (`from __future__ import annotations`) may store annotations as strings, the schema builder resolves them with `typing.get_type_hints()` before mapping them to JSON Schema. This preserves argument types such as `integer` and `boolean` for tool parameters.
+
+The LLM can choose a tool, provide arguments, receive the tool output, and continue the research loop until it produces a final response.
+
+The arXiv tool explicitly requests results sorted by submission date in descending order, which is useful for prompts focused on recent research.
 
 The second stage acts as a reviewer: it explicitly checks strengths, limitations, missing evidence, unsupported claims, and citation quality before producing a revised report.
 
