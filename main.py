@@ -6,7 +6,7 @@ import inspect
 import json
 import os
 from pathlib import Path
-from typing import Any, get_origin
+from typing import Any, get_origin, get_type_hints
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -69,11 +69,20 @@ def python_type_to_json_type(annotation: Any) -> str:
 def function_to_tool_schema(func) -> dict[str, Any]:
     """Generate an OpenAI function-tool schema from a Python callable."""
     signature = inspect.signature(func)
+
+    # `from __future__ import annotations` stores annotations as strings.
+    # get_type_hints() resolves them back to actual Python types so JSON
+    # schemas preserve int/bool/list/dict correctly.
+    try:
+        resolved_hints = get_type_hints(func)
+    except (NameError, TypeError):
+        resolved_hints = {}
+
     properties: dict[str, Any] = {}
     required: list[str] = []
 
     for name, parameter in signature.parameters.items():
-        annotation = parameter.annotation
+        annotation = resolved_hints.get(name, parameter.annotation)
         if annotation is inspect.Parameter.empty:
             annotation = str
 
