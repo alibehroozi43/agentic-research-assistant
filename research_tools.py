@@ -34,11 +34,13 @@ _SESSION.headers.update(
 
 
 def arxiv_search_tool(query: str, max_results: int = 5) -> list[dict[str, Any]]:
-    """Search arXiv for papers matching a research query."""
+    """Search arXiv for the newest papers matching a research query."""
     params = {
         "search_query": f"all:{query}",
         "start": 0,
         "max_results": max_results,
+        "sortBy": "submittedDate",
+        "sortOrder": "descending",
     }
 
     try:
@@ -73,11 +75,27 @@ def arxiv_search_tool(query: str, max_results: int = 5) -> list[dict[str, Any]]:
 
             results.append(
                 {
-                    "title": title_node.text.strip() if title_node is not None and title_node.text else "",
+                    "title": (
+                        title_node.text.strip()
+                        if title_node is not None and title_node.text
+                        else ""
+                    ),
                     "authors": authors,
-                    "published": published_node.text[:10] if published_node is not None and published_node.text else "",
-                    "url": id_node.text.strip() if id_node is not None and id_node.text else "",
-                    "summary": summary_node.text.strip() if summary_node is not None and summary_node.text else "",
+                    "published": (
+                        published_node.text[:10]
+                        if published_node is not None and published_node.text
+                        else ""
+                    ),
+                    "url": (
+                        id_node.text.strip()
+                        if id_node is not None and id_node.text
+                        else ""
+                    ),
+                    "summary": (
+                        summary_node.text.strip()
+                        if summary_node is not None and summary_node.text
+                        else ""
+                    ),
                     "pdf_url": pdf_url,
                 }
             )
